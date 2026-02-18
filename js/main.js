@@ -23,6 +23,18 @@ let   lastTime = 0;
 
 // ─── Setup UI ─────────────────────────────────────────────────────────────────
 function buildSetupUI() {
+  // ── Budget preset buttons ──
+  document.querySelectorAll('.budget-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const amount = +btn.dataset.amount;
+      if (game.setBudget(amount)) {
+        document.querySelectorAll('.budget-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        refreshSetupUI();
+      }
+    });
+  });
+
   for (const player of [1, 2]) {
     const container = $(`p${player}-unit-selector`);
     container.innerHTML = '';
@@ -67,6 +79,10 @@ function refreshSetupUI() {
       if (el) el.textContent = game.compositions[player][type];
     }
   }
+  // Keep budget button highlight in sync after restart
+  document.querySelectorAll('.budget-btn').forEach(b => {
+    b.classList.toggle('active', +b.dataset.amount === game.globalBudget);
+  });
 }
 
 // ─── Battle UI ────────────────────────────────────────────────────────────────

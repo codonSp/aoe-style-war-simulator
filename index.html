@@ -13,7 +13,20 @@
      ══════════════════════════════════════════════════════════════════════════ -->
 <div id="screen-setup" class="screen">
   <h1>⚔️ War Simulator</h1>
-  <p class="setup-subtitle">Each player has <strong>500 gold</strong> to build an army.  Last army standing wins.</p>
+  <p class="setup-subtitle">Build an army within your budget. Last army standing wins.</p>
+
+  <!-- Budget selector -->
+  <div class="budget-row">
+    <span class="budget-label">Budget per player:</span>
+    <div class="budget-presets">
+      <button class="budget-btn" data-amount="300">300g · Skirmish</button>
+      <button class="budget-btn active" data-amount="500">500g · Standard</button>
+      <button class="budget-btn" data-amount="750">750g · Large</button>
+      <button class="budget-btn" data-amount="1000">1000g · Epic</button>
+      <button class="budget-btn" data-amount="1500">1500g · Grand War</button>
+    </div>
+    <span class="budget-note">Changing budget resets army selections</span>
+  </div>
 
   <!-- Unit reference guide -->
   <div class="unit-guide" id="unit-guide-strip"></div>

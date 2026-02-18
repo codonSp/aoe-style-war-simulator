@@ -18,8 +18,9 @@ export class Game {
       1: { FOOT: 0, ARCHER: 0, HORSE: 0, PLANNER: 0 },
       2: { FOOT: 0, ARCHER: 0, HORSE: 0, PLANNER: 0 },
     };
-    this.budgetLeft = { 1: BUDGET, 2: BUDGET };
-    this.locked     = { 1: false, 2: false };
+    this.globalBudget = this.globalBudget ?? BUDGET;  // preserve across reset()
+    this.budgetLeft   = { 1: this.globalBudget, 2: this.globalBudget };
+    this.locked       = { 1: false, 2: false };
 
     this.armies       = { 1: [], 2: [] };
     this.deployPlayer = 1;
@@ -46,6 +47,20 @@ export class Game {
   }
 
   // ─── SETUP ────────────────────────────────────────────────────────────────
+
+  /** Change budget for both players; resets all army selections. */
+  setBudget(amount) {
+    if (this.locked[1] || this.locked[2]) return false;
+    this.globalBudget = amount;
+    this.budgetLeft   = { 1: amount, 2: amount };
+    // Clear selections — previous picks may exceed new budget
+    this.compositions = {
+      1: { FOOT: 0, ARCHER: 0, HORSE: 0, PLANNER: 0 },
+      2: { FOOT: 0, ARCHER: 0, HORSE: 0, PLANNER: 0 },
+    };
+    this._emit();
+    return true;
+  }
 
   addUnit(player, type) {
     if (this.locked[player]) return false;

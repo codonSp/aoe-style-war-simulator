@@ -87,6 +87,38 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
   font-size: 0.95rem;
 }
 
+/* Budget selector */
+.budget-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  max-width: 880px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.budget-label { font-weight: 600; color: var(--text); white-space: nowrap; }
+.budget-note  { font-size: 0.72rem; color: var(--muted); }
+.budget-presets { display: flex; gap: 6px; flex-wrap: wrap; }
+.budget-btn {
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+}
+.budget-btn:hover  { border-color: var(--gold); color: var(--gold); }
+.budget-btn.active { background: var(--gold); color: #111; border-color: var(--gold); }
+
 /* Unit guide strip */
 .unit-guide {
   display: flex;

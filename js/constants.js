@@ -6,8 +6,13 @@ export const CANVAS_W = GRID_COLS * TILE; // 800
 export const CANVAS_H = GRID_ROWS * TILE; // 560
 
 // ─── Economy ─────────────────────────────────────────────────────────────────
-export const BUDGET = 500;
-export const DEPLOY_COLS = 8; // deployment zone width (each side)
+export const BUDGET      = 500;  // default; overridable in setup
+export const DEPLOY_COLS = 8;    // deployment zone width (each side)
+
+// ─── Foot Soldier compounding defense ────────────────────────────────────────
+// Each allied Foot Soldier within defenseAuraRange of the target multiplies
+// incoming damage by this factor.  Two Foot Soldiers → (0.8)² = 64 % damage.
+export const FOOT_DEFENSE_MULT = 0.8;
 
 // ─── Unit Definitions ────────────────────────────────────────────────────────
 // Each soldier type is deliberately tuned:
@@ -25,12 +30,10 @@ export const UNIT_DEFS = {
     moveSpeed:        5,
     damage:           10,
     attackRange:      2,
-    baseDefense:      5,    // own base DR
-    defenseAura:      10,   // DR bonus given to each ally in aura radius
-    defenseAuraRange: 2,
+    defenseAuraRange: 2,    // radius in which this unit contributes to defense
     aoeAttack:        true, // hits ALL enemies in range each attack
     shape:            'square',
-    desc:             'Cheap frontline fighter.\nGrants +10 DR to allies within 2 tiles.',
+    desc:             'Cheap frontline fighter.\nEach nearby Foot = ×0.8 damage multiplier (compounds).\n2 Foot together → target takes only 64 % damage.',
   },
   ARCHER: {
     id:               'ARCHER',

@@ -1,4 +1,4 @@
-import { UNIT_DEFS } from './constants.js';
+import { UNIT_DEFS, FOOT_DEFENSE_MULT } from './constants.js';
 
 let _nextId = 0;
 
@@ -58,34 +58,39 @@ export class Unit {
 
   // ─── combat ───────────────────────────────────────────────────────────────
 
-  /** Effective defense of THIS unit (own base + all nearby foot aura) */
-  effectiveDefense(allUnits) {
-    let dr = this.def.baseDefense;
-    for (const u of allUnits) {
-      if (u === this) continue;
-      if (!u.alive || u.team !== this.team || u.type !== 'FOOT') continue;
-      if (dist(u.gx, u.gy, this.gx, this.gy) <= u.def.defenseAuraRange) {
-        dr += u.def.defenseAura;
-      }
-    }
-    return dr;
-  }
-
-  /** Damage this unit would deal to `target` given current state */
+  /**
+   * Damage this unit deals to `target`.
+   *
+   * Defense is multiplicative: each allied Foot Soldier within defenseAuraRange
+   * of the TARGET applies a ×FOOT_DEFENSE_MULT (0.8) factor.
+   *   1 nearby Foot → ×0.8   (80 % damage taken)
+   *   2 nearby Foot → ×0.64  (64 % damage taken)
+   *   n nearby Foot → ×(0.8)^n
+   */
   calcDamage(target, allUnits, chargeThisTurn = false) {
     let dmg = this.def.damage;
 
     if (this.type === 'HORSE' && chargeThisTurn) {
-      dmg = Math.round(dmg * this.def.chargeMultiplier);
+      dmg *= this.def.chargeMultiplier;
     }
 
     if (this.type === 'ARCHER') {
       const d = dist(this.gx, this.gy, target.gx, target.gy);
-      if (d <= this.def.meleePenaltyRange) dmg = Math.round(dmg * 0.5);
+      if (d <= this.def.meleePenaltyRange) dmg *= 0.5;
     }
 
-    const dr = target.effectiveDefense(allUnits);
-    return Math.max(0, dmg - dr);
+    // Count allied Foot Soldiers within aura range of the target
+    const auraRange = UNIT_DEFS.FOOT.defenseAuraRange;
+    const footCount = allUnits.filter(u =>
+      u.alive && u.team === target.team && u.type === 'FOOT' &&
+      dist(u.gx, u.gy, target.gx, target.gy) <= auraRange
+    ).length;
+
+    if (footCount > 0) {
+      dmg *= Math.pow(FOOT_DEFENSE_MULT, footCount);
+    }
+
+    return Math.max(1, Math.round(dmg));
   }
 
   /** Apply damage; returns true if this unit just died */
