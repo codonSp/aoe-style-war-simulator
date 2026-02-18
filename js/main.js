@@ -38,13 +38,12 @@ function buildSetupUI() {
         <div class="unit-controls">
           <button class="btn-minus" data-player="${player}" data-type="${type}">−</button>
           <span class="unit-count" id="p${player}-count-${type}">0</span>
-          <button class="btn-plus" data-player="${player}" data-type="${type}">+</button>
+          <button class="btn-plus"  data-player="${player}" data-type="${type}">+</button>
         </div>`;
       container.appendChild(card);
     }
   }
 
-  // Event delegation for +/−
   document.querySelectorAll('.btn-plus').forEach(btn =>
     btn.addEventListener('click', () => game.addUnit(+btn.dataset.player, btn.dataset.type))
   );
@@ -53,18 +52,10 @@ function buildSetupUI() {
   );
 
   $('p1-lock').addEventListener('click', () => {
-    if (game.lockIn(1)) {
-      $('p1-lock').classList.add('locked');
-      $('p1-lock').textContent = '✓ Locked In';
-      $('p1-lock').disabled = true;
-    }
+    if (game.lockIn(1)) { $('p1-lock').classList.add('locked'); $('p1-lock').textContent = '✓ Locked In'; $('p1-lock').disabled = true; }
   });
   $('p2-lock').addEventListener('click', () => {
-    if (game.lockIn(2)) {
-      $('p2-lock').classList.add('locked');
-      $('p2-lock').textContent = '✓ Locked In';
-      $('p2-lock').disabled = true;
-    }
+    if (game.lockIn(2)) { $('p2-lock').classList.add('locked'); $('p2-lock').textContent = '✓ Locked In'; $('p2-lock').disabled = true; }
   });
 }
 
@@ -82,58 +73,75 @@ function refreshSetupUI() {
 function refreshBattleUI() {
   if (game.phase === PHASE.SETUP) return;
 
-  // Turn banner
-  const pal = COLORS['p' + game.currentPlayer];
+  // ── Turn / deploy banner ──
+  const pal    = COLORS['p' + game.currentPlayer];
   const turnEl = $('turn-label');
   if (game.phase === PHASE.DEPLOY) {
     const dpal = COLORS['p' + game.deployPlayer];
-    turnEl.textContent = `Deploy: ${dpal.name} (${game.deployQueue.length} left)`;
+    turnEl.textContent = `${dpal.name} — place ${game.deployQueue.length} unit(s)`;
     turnEl.style.color = dpal.fill;
   } else {
     turnEl.textContent = `${pal.name}'s Turn · Round ${game.turn}`;
     turnEl.style.color = pal.fill;
   }
 
-  // Phase hint
+  // ── Phase hint ──
   const phaseEl = $('phase-hint');
+  const alive = game.phase !== PHASE.SETUP ? game.aliveUnits(game.currentPlayer) : [];
+
   if (game.phase === PHASE.DEPLOY) {
     const zone = game.deployPlayer === 1 ? 'blue (left) zone' : 'red (right) zone';
     phaseEl.textContent = `Click the ${zone} to place each unit`;
     phaseEl.style.color = COLORS['p' + game.deployPlayer].fill;
+  } else if (game.phase === PHASE.BATTLE) {
+    const planners = alive.filter(u => u.type === 'PLANNER' && !u.hasActed);
+    if (planners.length > 0) {
+      phaseEl.textContent = `💠 Click a Planner to rally troops, then End Turn`;
+      phaseEl.style.color = '#2ecc71';
+    } else if (alive.some(u => u.type === 'PLANNER')) {
+      phaseEl.textContent = `📋 All Planners have given orders — End Turn`;
+      phaseEl.style.color = '#f39c12';
+    } else {
+      phaseEl.textContent = `⚔️ No Planners — End Turn to watch your army fight`;
+      phaseEl.style.color = '#e74c3c';
+    }
   } else {
     phaseEl.textContent = '';
   }
 
-  // Selected unit info
+  // ── Selected unit (Planner) info ──
   const sel    = game.selectedUnit;
   const infoEl = $('unit-info');
+
+  // Only show Instruct button; hide all others permanently
+  $('btn-move').style.display    = 'none';
+  $('btn-attack').style.display  = 'none';
+  $('btn-charge').style.display  = 'none';
+
   if (sel) {
     const hpPct  = Math.round(sel.hp / sel.def.maxHp * 100);
     const mode   = game.pendingAction;
-    const modeHint = mode ? `<div class="sel-mode">▶ ${mode} — click target on map</div>` : '';
-    const rallyHint= sel.hasRally()
-      ? `<div class="sel-rally">📍 Rallying → (${sel.rallyX},${sel.rallyY})</div>` : '';
+    const modeHint = mode === ACTION.INSTRUCT
+      ? `<div class="sel-mode">▶ Click the map to set rally point</div>` : '';
+    const rallyHint = sel.hasRally()
+      ? `<div class="sel-rally">📍 Current rally → (${sel.rallyX},${sel.rallyY})</div>` : '';
+
     infoEl.innerHTML = `
-      <div class="sel-name">${sel.def.name}</div>
+      <div class="sel-name">💠 ${sel.def.name}</div>
       <div class="sel-stat">HP: ${sel.hp}/${sel.def.maxHp} (${hpPct}%)</div>
-      <div class="sel-stat">Spd:${sel.def.moveSpeed} · Dmg:${sel.def.damage} · Rng:${sel.def.attackRange}</div>
+      <div class="sel-stat">Instruct Range: ${sel.def.instructRange} tiles</div>
       ${rallyHint}${modeHint}`;
 
-    $('btn-move').disabled   = false;
-    $('btn-attack').disabled = false;
-    $('btn-charge').style.display   = sel.def.canCharge   ? '' : 'none';
-    $('btn-instruct').style.display = sel.def.canInstruct ? '' : 'none';
-    $('btn-charge').disabled   = sel.hasMoved;   // can't start charge if already moved
-    $('btn-instruct').disabled = false;
+    $('btn-instruct').style.display = '';
+    $('btn-instruct').disabled = (mode === ACTION.INSTRUCT); // already in mode
   } else {
-    infoEl.innerHTML = '<em>Click one of your units</em>';
-    $('btn-move').disabled   = true;
-    $('btn-attack').disabled = true;
-    $('btn-charge').style.display   = 'none';
+    infoEl.innerHTML = '<em>' + (game.hasPlanners(game.currentPlayer)
+      ? 'Click a 💠 Planner to issue a rally order'
+      : 'No Planners — armies fight automatically') + '</em>';
     $('btn-instruct').style.display = 'none';
   }
 
-  // Army status
+  // ── Army status ──
   for (const p of [1, 2]) {
     const el    = $(`army-status-${p}`);
     const alive = game.aliveUnits(p);
@@ -141,14 +149,13 @@ function refreshBattleUI() {
     const byType = {};
     for (const u of alive) byType[u.type] = (byType[u.type] || 0) + 1;
     const breakdown = Object.entries(byType)
-      .map(([t, n]) => `${UNIT_DEFS[t].abbr}×${n}`)
-      .join(' ');
+      .map(([t, n]) => `${UNIT_DEFS[t].abbr}×${n}`).join(' ');
     el.innerHTML = `<strong>${alive.length}/${total}</strong>${breakdown ? ` · ${breakdown}` : ''}`;
   }
 
-  // Combat log
-  const logEl = $('combat-log');
-  logEl.innerHTML = game.log.slice(0, 12).map(l => `<div class="log-line">${l}</div>`).join('');
+  // ── Combat log ──
+  $('combat-log').innerHTML = game.log.slice(0, 14)
+    .map(l => `<div class="log-line">${l}</div>`).join('');
 }
 
 // ─── Canvas click ─────────────────────────────────────────────────────────────
@@ -159,7 +166,6 @@ $('gameCanvas').addEventListener('click', e => {
   const px     = (e.clientX - rect.left) * scaleX;
   const py     = (e.clientY - rect.top)  * scaleY;
   const { col, row } = renderer.pixelToTile(px, py);
-
   if (col < 0 || col >= GRID_COLS) return;
 
   if (game.phase === PHASE.DEPLOY) {
@@ -170,18 +176,13 @@ $('gameCanvas').addEventListener('click', e => {
 });
 
 // ─── Action buttons ───────────────────────────────────────────────────────────
-$('btn-move').addEventListener('click',    () => game.setPendingAction(ACTION.MOVE));
-$('btn-attack').addEventListener('click',  () => game.setPendingAction(ACTION.ATTACK));
-$('btn-charge').addEventListener('click',  () => game.setPendingAction(ACTION.CHARGE));
-$('btn-instruct').addEventListener('click',() => game.setPendingAction(ACTION.INSTRUCT));
-$('btn-end-turn').addEventListener('click',() => game.endTurn());
+// Only INSTRUCT is user-facing now
+$('btn-instruct').addEventListener('click', () => game.setPendingAction(ACTION.INSTRUCT));
+$('btn-end-turn').addEventListener('click', () => game.endTurn());
 
 // ─── Keyboard shortcuts ───────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (game.phase !== PHASE.BATTLE) return;
-  if (e.key === 'm' || e.key === 'M') game.setPendingAction(ACTION.MOVE);
-  if (e.key === 'a' || e.key === 'A') game.setPendingAction(ACTION.ATTACK);
-  if (e.key === 'c' || e.key === 'C') game.setPendingAction(ACTION.CHARGE);
   if (e.key === 'i' || e.key === 'I') game.setPendingAction(ACTION.INSTRUCT);
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); game.endTurn(); }
   if (e.key === 'Escape') {
@@ -210,7 +211,6 @@ function showGameOver() {
 
 $('btn-restart').addEventListener('click', () => {
   game.reset();
-  // Re-enable lock buttons
   for (const p of [1, 2]) {
     const btn = $(`p${p}-lock`);
     btn.disabled = false;

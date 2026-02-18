@@ -90,6 +90,7 @@ export class Unit {
 
   /** Apply damage; returns true if this unit just died */
   takeDamage(amount) {
+    if (!this.alive) return false;   // already dead – ignore
     this.hp = Math.max(0, this.hp - amount);
     this.flashTimer = 200; // ms
     if (this.hp === 0) {
