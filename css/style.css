@@ -1,0 +1,361 @@
+/* ── Reset / Base ────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0f0f0f;
+  --surface:  #1a1a1a;
+  --surface2: #222;
+  --border:   #333;
+  --text:     #ddd;
+  --muted:    #888;
+  --p1:       #2980b9;
+  --p1-light: #aed6f1;
+  --p2:       #c0392b;
+  --p2-light: #f1948a;
+  --gold:     #f1c40f;
+  --green:    #2ecc71;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Screen switcher ─────────────────────────────────────────────────────── */
+.screen { display: none; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  transition: background 0.15s, opacity 0.15s;
+}
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--p1);
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.btn-primary:hover:not(:disabled) { filter: brightness(1.2); }
+
+.btn-large {
+  background: var(--gold);
+  color: #111;
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 6px;
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+}
+.btn-large:hover:not(:disabled) { filter: brightness(1.1); }
+.btn-large:disabled { background: #444; color: #888; }
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* ── SETUP SCREEN ─────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════ */
+#screen-setup {
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+#screen-setup h1 {
+  font-size: 2.2rem;
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.setup-subtitle {
+  text-align: center;
+  color: var(--muted);
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+/* Unit guide strip */
+.unit-guide {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.guide-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  min-width: 170px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.guide-card strong { color: var(--text); display: block; margin-bottom: 4px; font-size: 0.9rem; }
+.guide-card .gcost { color: var(--gold); font-weight: 700; }
+.guide-card .gdesc { margin-top: 4px; white-space: pre-line; line-height: 1.4; }
+
+/* Two-player setup columns */
+.players-row {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.player-col {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.player-col.p1 { border-top: 3px solid var(--p1); }
+.player-col.p2 { border-top: 3px solid var(--p2); }
+
+.player-col h2 { margin-bottom: 8px; font-size: 1.1rem; }
+.p1-title { color: var(--p1-light); }
+.p2-title { color: var(--p2-light); }
+
+.budget-bar {
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+  color: var(--gold);
+}
+
+/* Unit cards inside setup */
+.unit-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+.unit-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+}
+.unit-card-header strong { font-size: 0.88rem; }
+.unit-cost { color: var(--gold); font-weight: 700; font-size: 0.85rem; }
+.unit-stats { font-size: 0.72rem; color: var(--muted); margin-bottom: 5px; }
+.unit-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-minus, .btn-plus {
+  width: 28px; height: 28px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  line-height: 1;
+}
+.btn-plus:hover  { background: var(--green);   color: #fff; }
+.btn-minus:hover { background: var(--p2); color: #fff; }
+.unit-count { font-size: 1rem; font-weight: 700; min-width: 24px; text-align: center; }
+
+.btn-lock {
+  background: var(--surface2);
+  border: 1px solid var(--muted);
+  color: var(--text);
+  padding: 7px 14px;
+  font-size: 0.9rem;
+  width: 100%;
+  margin-top: 8px;
+  border-radius: 5px;
+}
+.btn-lock.locked { background: var(--green); color: #fff; border-color: var(--green); cursor: default; }
+.btn-lock:hover:not(.locked):not(:disabled) { border-color: var(--green); color: var(--green); }
+
+.vs-divider {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--muted);
+  align-self: center;
+  padding-top: 60px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* ── BATTLE SCREEN ────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════ */
+#screen-battle {
+  flex-direction: row;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sidebar */
+#sidebar {
+  width: 230px;
+  min-width: 230px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+#turn-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--p1);
+}
+
+#phase-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  min-height: 16px;
+}
+
+/* Unit info panel */
+#unit-info {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  min-height: 70px;
+  color: var(--muted);
+}
+.sel-name { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.sel-stat  { color: var(--muted); line-height: 1.6; }
+.sel-rally { color: var(--green); font-size: 0.75rem; }
+.sel-mode  { color: var(--gold);  font-size: 0.75rem; margin-top: 3px; }
+
+/* Action buttons */
+#action-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.action-btn {
+  flex: 1 1 45%;
+  padding: 7px 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+}
+.action-btn:hover:not(:disabled) { background: var(--p1); border-color: var(--p1); color: #fff; }
+#btn-charge:hover:not(:disabled) { background: #d4ac0d; border-color: #d4ac0d; color: #111; }
+#btn-instruct:hover:not(:disabled) { background: var(--green); border-color: var(--green); color: #111; }
+
+/* Army status */
+.army-panel {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 9px;
+  font-size: 0.78rem;
+}
+.army-panel.p1-panel { border-left: 3px solid var(--p1); }
+.army-panel.p2-panel { border-left: 3px solid var(--p2); }
+.army-panel h4 { font-size: 0.82rem; margin-bottom: 3px; }
+.dot { color: var(--muted); }
+
+/* Combat log */
+#combat-log {
+  flex: 1;
+  overflow-y: auto;
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+.log-line { padding: 1px 0; border-bottom: 1px solid var(--border); }
+.log-line:last-child { border: none; }
+
+/* End turn button */
+#btn-end-turn {
+  background: var(--gold);
+  color: #111;
+  padding: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 6px;
+  width: 100%;
+}
+#btn-end-turn:hover { filter: brightness(1.1); }
+
+/* Canvas wrapper */
+#canvas-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  overflow: hidden;
+}
+
+#gameCanvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  image-rendering: pixelated;
+  cursor: crosshair;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* ── GAME OVER SCREEN ─────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════ */
+#screen-gameover {
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+}
+
+.gameover-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 40px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+#winner-text {
+  font-size: 2.8rem;
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(241,196,15,0.5);
+}
+
+#battle-summary {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* ── Responsive canvas scaling ────────────────────────────────────────────── */
+@media (max-width: 1060px) {
+  #gameCanvas { width: 100%; height: auto; }
+}

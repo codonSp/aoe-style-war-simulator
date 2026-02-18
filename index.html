@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>War Simulator ⚔️</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SETUP SCREEN  – both players pick their army
+     ══════════════════════════════════════════════════════════════════════════ -->
+<div id="screen-setup" class="screen">
+  <h1>⚔️ War Simulator</h1>
+  <p class="setup-subtitle">Each player has <strong>500 gold</strong> to build an army.  Last army standing wins.</p>
+
+  <!-- Unit reference guide -->
+  <div class="unit-guide" id="unit-guide-strip"></div>
+
+  <div class="players-row">
+
+    <!-- PLAYER 1 -->
+    <div class="player-col p1">
+      <h2 class="p1-title">🔵 Player 1</h2>
+      <div class="budget-bar">Gold remaining: <span id="p1-budget">500</span> / 500</div>
+      <div id="p1-unit-selector"></div>
+      <button class="btn-lock" id="p1-lock">Lock In Army</button>
+    </div>
+
+    <div class="vs-divider">VS</div>
+
+    <!-- PLAYER 2 -->
+    <div class="player-col p2">
+      <h2 class="p2-title">🔴 Player 2</h2>
+      <div class="budget-bar">Gold remaining: <span id="p2-budget">500</span> / 500</div>
+      <div id="p2-unit-selector"></div>
+      <button class="btn-lock" id="p2-lock">Lock In Army</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     BATTLE SCREEN  – deploy + combat (same canvas, different phase)
+     ══════════════════════════════════════════════════════════════════════════ -->
+<div id="screen-battle" class="screen">
+
+  <!-- Left sidebar -->
+  <div id="sidebar">
+
+    <div>
+      <div id="turn-label">Player 1's Turn</div>
+      <div id="phase-hint"></div>
+    </div>
+
+    <!-- Selected unit details -->
+    <div id="unit-info"><em>Click one of your units to select it</em></div>
+
+    <!-- Action buttons -->
+    <div id="action-panel">
+      <button class="action-btn" id="btn-move"     disabled>🚶 Move</button>
+      <button class="action-btn" id="btn-attack"   disabled>⚔️ Attack</button>
+      <button class="action-btn" id="btn-charge"   disabled style="display:none">⚡ Charge</button>
+      <button class="action-btn" id="btn-instruct" disabled style="display:none">📋 Instruct</button>
+    </div>
+
+    <!-- Army status -->
+    <div class="army-panel p1-panel">
+      <h4>🔵 Player 1</h4>
+      <div id="army-status-1"></div>
+    </div>
+    <div class="army-panel p2-panel">
+      <h4>🔴 Player 2</h4>
+      <div id="army-status-2"></div>
+    </div>
+
+    <!-- Combat log -->
+    <div id="combat-log"></div>
+
+    <!-- End turn -->
+    <button id="btn-end-turn">End Turn →</button>
+
+  </div>
+
+  <!-- Canvas area -->
+  <div id="canvas-wrapper">
+    <canvas id="gameCanvas"></canvas>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     GAME OVER SCREEN
+     ══════════════════════════════════════════════════════════════════════════ -->
+<div id="screen-gameover" class="screen">
+  <div class="gameover-box">
+    <h1 id="winner-text">Player 1 Wins!</h1>
+    <div id="battle-summary"></div>
+    <button class="btn-large" id="btn-restart">↩ Play Again</button>
+  </div>
+</div>
+
+
+<!-- ── Legend tooltip (shows on hover over unit abbreviations) ─────────────── -->
+<script type="module">
+  // Inline bootstrap: build unit guide cards before main.js loads,
+  // so the setup screen looks populated immediately.
+  import { UNIT_DEFS } from './js/constants.js';
+
+  const strip = document.getElementById('unit-guide-strip');
+  for (const [, def] of Object.entries(UNIT_DEFS)) {
+    const card = document.createElement('div');
+    card.className = 'guide-card';
+    card.innerHTML = `<strong>${def.name}</strong>
+<span class="gcost">${def.cost} gold</span>
+<span class="gdesc">${def.desc}</span>
+<span style="font-size:0.7rem;color:#666;margin-top:4px;display:block">
+  HP:${def.maxHp} · Spd:${def.moveSpeed} · Dmg:${def.damage} · Range:${def.attackRange}</span>`;
+    strip.appendChild(card);
+  }
+</script>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
